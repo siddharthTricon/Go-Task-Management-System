@@ -1,42 +1,41 @@
 // package main
 
 // import (
-// "github.com/siddharthTricon/go-task-management-sysytem/controllers"
-// "github.com/siddharthTricon/go-task-management-sysytem/database"
-// "github.com/siddharthTricon/go-task-management-sysytem/middlewares"
-// "github.com/siddharthTricon/go-task-management-sysytem/repositories"
-// "github.com/siddharthTricon/go-task-management-sysytem/services"
-// "github.com/siddharthTricon/go-task-management-sysytem/utils"
-//     "github.com/gin-gonic/gin"
+	
+// 	"github.com/siddharthTricon/go-task-management-sysytem/controllers"
+// 	"github.com/siddharthTricon/go-task-management-sysytem/database"
+// 	"github.com/siddharthTricon/go-task-management-sysytem/repositories"
+// 	"github.com/siddharthTricon/go-task-management-sysytem/routes"
+// 	"github.com/siddharthTricon/go-task-management-sysytem/services"
+// 	"github.com/siddharthTricon/go-task-management-sysytem/utils"
+
+// 	"github.com/gin-gonic/gin"
 // )
 
 // func main() {
-//     utils.LoadEnv()
-//     utils.InitLogger()
+// 	utils.LoadEnv()
+// 	utils.InitLogger()
 
-//     database.Connect()
-//     database.DB.AutoMigrate(&models.User{}, &models.Task{})
+// 	// Database connection and migrations
+// 	database.Connect()
+// 	database.DB.AutoMigrate(&models.User{}, &models.Task{})
 
-//     jwtService := services.NewJWTService()
-//     authController := controllers.NewAuthController(jwtService)
-//     taskController := controllers.NewTaskController(repositories.NewTaskRepository())
+// 	// Initialize services and controllers
+// 	jwtService := services.NewJWTService()
+// 	authController := controllers.NewAuthController(jwtService)
+// 	taskController := controllers.NewTaskController(repositories.NewTaskRepository())
 
-//     router := gin.Default()
+// 	// Create router
+// 	router := gin.Default()
 
-//     // Auth Routes
-//     router.POST("/register", authController.Register)
-//     router.POST("/login", authController.Login)
+// 	// Register routes
+// 	routes.InitRoutes(router, authController, taskController)
 
-//     // Task Routes (protected)
-//     taskRoutes := router.Group("/tasks")
-//     taskRoutes.Use(middlewares.AuthMiddleware())
-//     {
-//         taskRoutes.GET("/", taskController.GetAllTasks)
-//         taskRoutes.POST("/", taskController.CreateTask)
-//     }
-
-//     router.Run(":8080")
+// 	// Start server
+// 	router.Run(":8080")
 // }
+
+
 
 
 
@@ -48,35 +47,45 @@
 package main
 
 import (
-	"taskmanager/controllers"
-	"taskmanager/database"
-	"taskmanager/repositories"
-	"taskmanager/routes"
-	"taskmanager/services"
-	"taskmanager/utils"
+	"log"
+
+	"github.com/siddharthTricon/go-task-management-sysytem/controllers"
+	"github.com/siddharthTricon/go-task-management-sysytem/database"
+	"github.com/siddharthTricon/go-task-management-sysytem/models"
+	"github.com/siddharthTricon/go-task-management-sysytem/repositories"
+	"github.com/siddharthTricon/go-task-management-sysytem/routes"
+	"github.com/siddharthTricon/go-task-management-sysytem/services"
+	"github.com/siddharthTricon/go-task-management-sysytem/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// Load environment variables and initialize logger
 	utils.LoadEnv()
 	utils.InitLogger()
 
-	// Database connection and migrations
+	// Connect to the database
 	database.Connect()
-	database.DB.AutoMigrate(&models.User{}, &models.Task{})
+
+	// Automatically migrate database models
+	if err := database.DB.AutoMigrate(&models.User{}, &models.Task{}); err != nil {
+		log.Fatal("Failed to auto-migrate models: ", err)
+	}
 
 	// Initialize services and controllers
 	jwtService := services.NewJWTService()
 	authController := controllers.NewAuthController(jwtService)
 	taskController := controllers.NewTaskController(repositories.NewTaskRepository())
 
-	// Create router
+	// Create Gin router
 	router := gin.Default()
 
-	// Register routes
+	// Initialize routes
 	routes.InitRoutes(router, authController, taskController)
 
-	// Start server
-	router.Run(":8080")
+	// Start the server
+	if err := router.Run(":8080"); err != nil {
+		log.Fatal("Failed to start server: ", err)
+	}
 }
