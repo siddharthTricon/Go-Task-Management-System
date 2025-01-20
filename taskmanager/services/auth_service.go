@@ -1,7 +1,6 @@
 package services
 
 import (
-	"go/token"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -32,7 +31,7 @@ func (s *jwtService) GenerateToken(userID uint, role string) (string, error){
 		UserID: userID,
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt : jwtNewNumericDate(time.Now().Add(72 * time.Hour)),
+			ExpiresAt : jwt.NewNumericDate(time.Now().Add(72 * time.Hour)),
 		},
 	}
 
@@ -41,7 +40,7 @@ func (s *jwtService) GenerateToken(userID uint, role string) (string, error){
 }
 
 func (s *jwtService) ValidateToken(token string) (*jwt.Token, error){
-	return jwt.Pasre(token, func(t *jwt.Token) (interface{}, error){
+	return jwt.Parse(token, func(t *jwt.Token) (interface{}, error){
 		return []byte(s.secretKey), nil
 	})
 }
